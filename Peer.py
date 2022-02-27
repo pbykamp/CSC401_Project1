@@ -25,9 +25,9 @@ class rfc(object):
                 return i.hostname
 
     @staticmethod
-    def sendrfc():
+    def sendrfc(hostname, portnum):
         message = "P2P-DI/1.0 200 OK.\n"
-        for i in rfddatabase:
+        for i in rfcdatabase:
             if (i.hostname == hostname and i.portnum == portnum):
                 message += "RFC: %s Title: %s Hostname: %s Port: %s\n" %(i.rfcnum, i.title, i.hostname, i.portnum)
         return message
@@ -39,7 +39,7 @@ class peer(object):
         self.portnum = portnum
 
     @staticmethod
-    def addpeer(selfhostname, portnum):
+    def addpeer(self, hostname, portnum):
         activepeers.append(peer(hostname, portnum))
 
 
@@ -121,12 +121,12 @@ class server(threading.Thread):
     def execute(self):
         while (self.running):
             serverInput = self.connectedsocket.recv(1024)
-            inputlines = recv.splitlines()
+            inputlines = serverInput.splitlines()
 
-            if(inputLines[0].split()[0] == "GET" and inputLines[0].split()[1] == "RFCIndex"):
-                self.phostname = inputLines[1].split()[1]
+            if(inputlines[0].split()[0] == "GET" and inputlines[0].split()[1] == "RFCIndex"):
+                self.phostname = inputlines[1].split()[1]
                 self.connectsocket.send(rfc.sendrfc)
-            elif(inputLines[0].split()[0]=="GET" and lines[0].split()[1]=="RFC"):
+            elif(inputlines[0].split()[0]=="GET" and inputlines[0].split()[1]=="RFC"):
                 rfcnum = inputlines[0].split()[2]
                 rfcfile = path + "rfc" + rfcnum + ".txt"
                 try:
@@ -167,6 +167,8 @@ serverIp = 'localhost'
 serverPort = 65423
 cookie = 0
 
+path = "/Users/pujithapolimetla/PycharmProjects/CSC401_Project1/rfc"
+
 peerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serverSocket = socket.socket(socket.AF_INET, socket.SOCKET_STREAM)
 serverSocket.bind('', peerPort)
@@ -181,3 +183,4 @@ while True:
     connectedsocket, addr = serverSocket.accept()
     rfcserver = server(connectedsocket, addr)
     rfcserver.execute()
+

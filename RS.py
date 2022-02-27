@@ -70,26 +70,26 @@ class peer(object):
                 peerInput = self.connectedsocket.recv(1024)
                 inputLine = recv.splitlines()
                 if (inputLine[0].split()[0] == "register"):
-                    self.phostname = inputLine[0].split()[1]
-                    self.pportnum = inputLine[0].split()[2]
+                    self.phostname = inputLine[1].split()[1]
+                    self.pportnum = inputLine[2].split()[1]
                     message = peer.register(self.phostname, self.pportnum)
                     self.connectedsocket.send(message)
 
                 elif (inputLine[0].split()[0] == "leave"):
-                    self.phostname = inputLine[0].split()[1]
-                    self.pportnum = inputLine[0].split()[2]
+                    self.phostname = inputLine[1].split()[1]
+                    self.pportnum = inputLine[2].split()[1]
                     message = peer.leave(self.phostname, self.pportnum)
                     self.connectedsocket.send(message)
 
                 elif (inputLine[0].split()[0] == "pquery"):
-                    self.phostname = inputLine[0].split()[1]
-                    self.pportnum = inputLine[0].split()[2]
+                    self.phostname = inputLine[1].split()[1]
+                    self.pportnum = inputLine[2].split()[1]
                     message = peer.pquery(self.phostname, self.pportnum)
                     self.connectedsocket.send(message)
 
                 elif (inputLine[0].split()[0] == "keepalive"):
-                    self.phostname = inputLine[0].split()[1]
-                    self.pportnum = inputLine[0].split()[2]
+                    self.phostname = inputLine[1].split()[1]
+                    self.pportnum = inputLine[2].split()[1]
                     message = peer.keepalive(self.phostname, self.pportnum)
                     self.connectedsocket.send(message)
 
