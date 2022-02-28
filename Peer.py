@@ -40,7 +40,7 @@ class Peer(object):
         self.portnum = portnum
 
     @staticmethod
-    def addpeer(self, hostname, portnum):
+    def addpeer(hostname, portnum):
         activepeers.append(Peer(hostname, portnum))
 
 
@@ -54,9 +54,9 @@ class Client(threading.Thread):
         global serverName, serverPort, peerName, peerPort, cookie, activepeers
         if choice == 1:
             rfcpeer.register()
-        # elif (choice == '2'):
-        #     rfcclientthread.getActivePeers()
-        # elif (choice == '3'):
+        elif choice == 2:
+            rfcpeer.findPeers()
+        #elif (choice == '3'):
         #     if not temp_activePeers:
         #         print
         #         "No active peers in the network. Try contacting the RS again. \n"
@@ -71,49 +71,72 @@ class Client(threading.Thread):
         #     delta = end - start
         #     print
         #     "Time taken to download all files %d msecs" % (delta.seconds * 1000 + delta.microseconds / 1000)
-        # elif (choice == '5'):
-        #     self.c_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #     self.c_socket.connect((serverip, serverport))
-        #     msg2send = "LEAVE P2P-DI/1.0 \nHostname: %s \nPort: %s \nCookie: %s" % (peername, peerport, cookie)
-        #     self.c_socket.send(msg2send)
-        #     recv = self.c_socket.recv(1024)
-        #     print
-        #     recv
-        #     self.c_socket.close()
+        elif choice == 5:
+            rfcpeer.keepalive()
+        elif choice == 6:
+            rfcpeer.leave()
         else:
-            print("Wrong Input. Choose 1-5 \n")
+            print("Wrong Input. Choose 1-6 \n")
         self.clientSocket.close()
 
     def run(self):
         while self.running:
-            choice = input("Enter choice(1-5) \n 1: Register with RS \n 2: Get Active Peer list from RS \n 3: Get RFC index of Peers \n 4: Get RFC from Peer \n 5: Leave P2P network \n")
-            print(choice)
+            choice = input("Enter choice(1-5) \n 1: Register with RS \n 2: Get Active Peer list from RS \n 3: Get RFC index of Peers \n 4: Get RFC from Peer \n 5: Keep alive \n 6: Leave P2P network \n")
             rfcpeer.option(choice)
+
+    def leave(self):
+        self.clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.clientSocket.connect((serverName, serverPort))
+        message = "LEAVE P2P-DI/1.0 \nHostname: %s \nPort: %s \nCookie: %s" % (peerName, peerPort, cookie)
+        self.clientSocket.send(message.encode())
+        response = self.clientSocket.recv(1024).decode()
+        self.clientSocket.close()
 
     def register(self):
         global cookie
         self.clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.clientSocket.connect((serverName, serverPort))
         if cookie != 0:
-            print("HERE NOT NOT 0")
             message = "REGISTER P2P-DI/1.0 \nHostname: %s \nPort: %s \nCookie: %s" % (peerName, peerPort, cookie)
-            self.clientSocket.send(message)
-            response = self.clientSocket.recv(1024)
-            print("printing response: %s" % response)
+            self.clientSocket.send(message.encode())
+            response = self.clientSocket.recv(1024).decode()
             # activethread = keepalive()
             # activethread.start()
 
         else:
-            print("HERE 0")
             message = "REGISTER P2P-DI/1.0 \nHostname: %s \nPort: %s" % (peerName, peerPort)
-            self.clientSocket.send(message)
-            print("HERE 1")
+            self.clientSocket.send(message.encode())
             response = self.clientSocket.recv(1024)
-            print("printing response 112: %s" % response)
+            response.decode()
             line = response.splitlines()
             cookie = line[1].split()[1]
             # activethread = keepalive()
             # activethread.start()
+        self.clientSocket.close()
+
+
+    def findPeers(self):
+        self.clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.clientSocket.connect((serverName, serverPort))
+        message = "PQUERY P2P-DI/1.0 \nHostname: %s \nPort: %s \nCookie: %s" % (peerName, peerPort, cookie)
+        self.clientSocket.send(message.encode())
+        response = self.clientSocket.recv(1024).decode()
+        print("print response from rs: \n%s" % response)
+        peers = response.splitlines()
+        self.clientSocket.close()
+        del activepeers[:]
+        for i in peers[:]:
+            hostname = i.split()[1]
+            portnum = i.split()[3]
+            Peer.addpeer(hostname, portnum)
+        print("number of peers in pquery %d\n" % len(activepeers))
+
+    def keepalive(self):
+        self.clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.clientSocket.connect((serverName, serverPort))
+        message = "KEEPALIVE P2P-DI/1.0 \nHostname: %s \nPort: %s \nCookie: %s" % (peerName, peerPort, cookie)
+        self.clientSocket.send(message.encode())
+        response = self.clientSocket.recv(1024).decode()
         self.clientSocket.close()
 
     # def rfcquery(self, hostname, portnum):
@@ -153,20 +176,7 @@ class Client(threading.Thread):
     #     print("RFC not found")
     #     return
 
-    # def findPeers(self):
-    #     self.connectedsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #     self.connectedsocket.connect(serverName, serverPort)
-    #     message = "pquery %s %s\n" % (peerName, peerPort)
-    #     self.connectedsocket.send(message)
-    #     response = self.connectedsocket.recv(1024)
-    #     print(response)
-    #     peers = response.splitLines()
-    #     self.connectedsocket.close()
-    #     activepeers = []
-    #     for i in peers[1:]:
-    #         phostname = i.split()[1]
-    #         pportnum = i.split()[3]
-    #         Peer.addpeer(phostname, pportnum)
+
 
 
 # class server(threading.Thread):
