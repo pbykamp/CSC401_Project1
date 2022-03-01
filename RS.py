@@ -49,8 +49,6 @@ class Peer(object):
                 message += "Hostname: " + p.hostname + " PortNumber: " + p.portnum + "\n"
             # else:
             #     continue
-
-        print("\n\n")
         return message
 
     @staticmethod
@@ -71,15 +69,13 @@ class Client(threading.Thread):
         self.connectedsocket = connectedsocket
         self.addr = addr
         self.running = True
-        print("\nClient- " + self.addr[0] + " connected rs 71")
+        print("Client- " + self.addr[0] + " connected rs 71")
 
     def run(self):
         while self.running:
             peerInput = self.connectedsocket.recv(1024)
-
             if not peerInput:
                 break
-
             inputLine = peerInput.splitlines()
             self.phostname = inputLine[1].split()[1]
             self.pportnum = inputLine[2].split()[1]
@@ -91,6 +87,7 @@ class Client(threading.Thread):
             elif (inputLine[0].split()[0] == "LEAVE"):
                 message = Peer.leave(self.phostname, self.pportnum)
                 self.connectedsocket.send(message)
+                print("number of peers %d\n" % len(activepeerlist))
 
             elif (inputLine[0].split()[0] == "PQUERY"):
                 message = Peer.pquery(self.phostname, self.pportnum)
@@ -109,7 +106,7 @@ serverPort = 65423
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serverSocket.bind(('', serverPort))
 serverSocket.listen(1)
-print('The server is ready to receive')
+print('The RS server is ready to receive')
 
 while True:
     connectedSocket, addr = serverSocket.accept()

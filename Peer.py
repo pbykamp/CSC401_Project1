@@ -2,36 +2,32 @@ import socket
 import random
 import threading
 
-rfcdatabase = []
+mainrfcdatabase = []
+peerrfcdatabase = []
 activepeers = []
 
 
-# class rfc(object):
-#     def __init__(self, rfcnum, title, hostname, portnum):
-#         self.rfcnum = rfcnum
-#         self.title = title
-#         self.hostname = hostname
-#         self.portnum = portnum
-#         self.ttl = 7200
-#
-#     @staticmethod
-#     def addrfc(rfcnum, title, hostname, portnum):
-#         rfcdatabase.append(rfc(rfcnum, title, hostname, portnum))
-#         return
-#
-#     @staticmethod
-#     def findrfc(rfcnum):
-#         for i in rfcdatabase:
-#             if (i.ttl != 0 and i.rfcnum == rfcnum):
-#                 return i.hostname
-#
-#     @staticmethod
-#     def sendrfc(hostname, portnum):
-#         message = "P2P-DI/1.0 200 OK.\n"
-#         for i in rfcdatabase:
-#             if (i.hostname == hostname and i.portnum == portnum):
-#                 message += "RFC: %s Title: %s Hostname: %s Port: %s\n" %(i.rfcnum, i.title, i.hostname, i.portnum)
-#         return message
+class rfc(object):
+    def __init__(self, rfcnum, title, hostname, portnum):
+        self.rfcnum = rfcnum
+        self.title = title
+        self.hostname = hostname
+        self.portnum = portnum
+        self.ttl = 7200
+
+    @staticmethod
+    def get_rfc(rfcnum):
+        for i in peerrfcdatabase:
+            if i.ttl != 0 and i.rfcnum == rfcnum:
+                return i.hostname
+
+    @staticmethod
+    def push_rfc():
+        message = "P2P-DI/1.0 200 OK.\n"
+        for i in peerrfcdatabase:
+            if i.hostname == peerName and i.portnum == peerPort:
+                message += "RFC: %s Title: %s Hostname: %s Port: %s\n" % (i.rfcnum, i.title, i.hostname, i.portnum)
+        return message
 
 
 class Peer(object):
@@ -56,13 +52,10 @@ class Client(threading.Thread):
             rfcpeer.register()
         elif choice == 2:
             rfcpeer.findPeers()
-        #elif (choice == '3'):
-        #     if not temp_activePeers:
-        #         print
-        #         "No active peers in the network. Try contacting the RS again. \n"
-        #         return
-        #     for i in temp_activePeers:
-        #         rfcclientthread.rfcQuery(i.host, i.port)
+        elif choice == 3:
+            #userhostname = input("hostname of the peer you want to query")
+            userportnum = input("port number of the peer you want to query: ")
+            rfcpeer.rfcquery(userportnum)
         # elif (choice == '4'):
         #     rfc_no = str(raw_input("Enter RFC no to be fetched: "))
         #     start = datetime.datetime.now()
@@ -74,6 +67,9 @@ class Client(threading.Thread):
         elif choice == 5:
             rfcpeer.keepalive()
         elif choice == 6:
+            rfcpeer.addrfc()
+            print("length of queried rfc index: %s\n" % len(peerrfcdatabase))
+        elif choice == 7:
             rfcpeer.leave()
         else:
             print("Wrong Input. Choose 1-6 \n")
@@ -81,7 +77,7 @@ class Client(threading.Thread):
 
     def run(self):
         while self.running:
-            choice = input("Enter choice(1-5) \n 1: Register with RS \n 2: Get Active Peer list from RS \n 3: Get RFC index of Peers \n 4: Get RFC from Peer \n 5: Keep alive \n 6: Leave P2P network \n")
+            choice = input("Enter choice(1-5) \n 1: Register with RS \n 2: Get Active Peer list from RS \n 3: Get RFC index of Peers \n 4: Get RFC from Peer \n 5: Keep alive \n 6: add RFC's \n 7: Leave P2P network \n")
             rfcpeer.option(choice)
 
     def leave(self):
@@ -110,8 +106,6 @@ class Client(threading.Thread):
             response.decode()
             line = response.splitlines()
             cookie = line[1].split()[1]
-            # activethread = keepalive()
-            # activethread.start()
         self.clientSocket.close()
 
 
@@ -126,9 +120,9 @@ class Client(threading.Thread):
         self.clientSocket.close()
         del activepeers[:]
         for i in peers[:]:
-            hostname = i.split()[1]
-            portnum = i.split()[3]
-            Peer.addpeer(hostname, portnum)
+                hostname = i.split()[1]
+                portnum = i.split()[3]
+                Peer.addpeer(hostname, portnum)
         print("number of peers in pquery %d\n" % len(activepeers))
 
     def keepalive(self):
@@ -139,95 +133,52 @@ class Client(threading.Thread):
         response = self.clientSocket.recv(1024).decode()
         self.clientSocket.close()
 
-    # def rfcquery(self, hostname, portnum):
-    #     self.clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #     self.clientSocket.connet(hostname, portnum)
-    #     message = "GET RFCIndex \n Hostname: %s \nPort: %s \n" % (peerName, int(peerPort))
-    #     self.clientSocket.send(message)
-    #     response = self.clientSocket.recv(4096)
-    #     print(response)
-    #     responseLine = response.splitlines()
-    #     for i in responseLine[1:]:
-    #         rfcnum = i.split()[1]
-    #         title = i.split()[3]
-    #         hostname = i.split()[5]
-    #         portnum = i.split()[7]
-    #         for j in rfcdatabase:
-    #             if(j.rfcnum == rfcnum):
-    #                 break
-    #         rfc.addrfc(rfcnum, title, hostname, portnum)
-    #     self.connectedsocket.close()
+    def addrfc(self):
+        for i in range(0, 60):
+            rfctitle = "rfc" + str(i)
+            peerrfcdatabase.append(rfc(i, rfctitle, peerName, peerPort))
 
-    # def findrfc(self, rfcnum):
-    #     for i in rfcdatabase:
-    #         if (i.rfcnum == rfcnum):
-    #             self.connectedsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #             self.connectedsocket.connect(i.hostname, int(i.portnum))
-    #             message = "GET RFC %s\n" % (rfcnum)
-    #             self.connectedsocket.send(message)
-    #             response = self.connectedsocket.recv(1024)
-    #             status = response.splitLines()
-    #             if (status[0].split[1] != '200'):
-    #                 print("Request error")
-    #                 return False
-    #             return
-    #         else:
-    #             continue
-    #     print("RFC not found")
-    #     return
+    def rfcquery(self, portnum):
+        self.clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.clientSocket.connect((peerName, portnum))
+        message = "GET RFC-Index \n Hostname: %s \nPort: %s \n" % (peerName, int(peerPort))
+        self.clientSocket.send(message)
+        response = self.clientSocket.recv(100000)
+        print("Queried RFCs: %s\n" % response)
+        responseLine = response.splitlines()
+        for i in responseLine[1:]:
+            rfcnum = i.split()[1]
+            title = i.split()[3]
+            hostname = i.split()[5]
+            portnum = i.split()[7]
+            peerrfcdatabase.append(rfc(rfcnum, title, hostname, portnum))
+        print("update length: %d" % len(peerrfcdatabase))
+        self.clientSocket.close()
 
+class Server(threading.Thread):
+    def __init__(self, connectedsocket, addr):
+        threading.Thread.__init__(self)
+        self.connectedsocket = connectedsocket
+        self.addr = addr
+        self.running = True
+        print("Client- " + self.addr[0] + " connected")
 
+    def run(self):
+        while (self.running):
+            serverInput = self.connectedsocket.recv(1024)
+            if not serverInput:
+                break
 
+            inputlines = serverInput.splitlines()
+            if(inputlines[0].split()[0] == "GET" and inputlines[0].split()[1] == "RFC-Index"):
+                print("IN SERVER")
+                self.connectedsocket.send(rfc.push_rfc())
 
-# class server(threading.Thread):
-#     def __init__(self, connectedsocket, addr):
-#         self.connectedsocket = connectedsocket
-#         self.addr = addr
-#         self.running = True
-#
-#     def execute(self):
-#         while (self.running):
-#             serverInput = self.connectedsocket.recv(1024)
-#             inputlines = serverInput.splitlines()
-#
-#             if(inputlines[0].split()[0] == "GET" and inputlines[0].split()[1] == "RFCIndex"):
-#                 self.phostname = inputlines[1].split()[1]
-#                 self.connectsocket.send(rfc.sendrfc)
-#             elif(inputlines[0].split()[0]=="GET" and inputlines[0].split()[1]=="RFC"):
-#                 rfcnum = inputlines[0].split()[2]
-#                 rfcfile = path + "rfc" + rfcnum + ".txt"
-#                 try:
-#                     f = open(rfcfile, 'rb')
-#                     self.connectedsocket.send("P2P-DI/1.0 200 OK \n")
-#                 except IOError:
-#                     print("File not found")
-#                     self.connectedsocket.send("P2P-DI/1.0 400 Bad Request\n")
-#                     self.connectedsocket.shutdown(socket.SHUT_WR)
-#             else:
-#                 self.connectedsocket.send("P2P-DI/1.0 404 Bad Request")
-#
-#     def stop(self):
-#         self.running = False
+            else:
+                self.connectedsocket.send("P2P-DI/1.0 404 Bad Request")
 
-# class keepalive(threading.Thread):
-#     def __init__(self):
-#         self.connectedsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#         self.running = True
-#
-#     def execute(self):
-#         while (self.running):
-#             self.connectedsocket = socket.socket(socket.AF_INENT, socket.SOCK_STREAM)
-#             # sleep(200)
-#             self.connectedsocket.connnect(serverName, serverPort)
-#             message = "keepalive P2P-DI/1.0 \nHostname: %s \nPort: %s \nCookie: %s" % (peerName, peerPort, cookie)
-#             self.connectedsocket.send(message)
-#             response = self.connectedsocket.recv(1024)
-#             print(response)
-#             self.connectedsocket.close()
-#
-#     def stop(self):
-#         self.running = False
-
+    def stop(self):
+        self.running = False
 
 peerName = socket.gethostname()
 peerPort = random.randint(65000, 65200)
@@ -235,20 +186,19 @@ serverName = 'localhost'
 serverPort = 65423
 cookie = 0
 
-path = "/Users/pujithapolimetla/PycharmProjects/CSC401_Project1/rfc"
-
 peerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 peerSocket.connect((serverName, serverPort))
-# serverSocket = socket.socket(socket.AF_INET, socket.SOCKET_STREAM)
-# serverSocket.bind('', peerPort)
-# serverSocket.listen(1)
+
+ptpserverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+ptpserverSocket.bind(('', peerPort))
+ptpserverSocket.listen(1)
 
 print("Peer Server is listening on %s with port number %d" % (peerName, peerPort))
 
 rfcpeer = Client(peerSocket)
 rfcpeer.start()
 
-# while True:
-#     connectedsocket, addr = serverSocket.accept()
-#     rfcserver = server(connectedsocket, addr)
-#     rfcserver.execute()
+while True:
+    connectedSocket, addr = ptpserverSocket.accept()
+    initializationThread = Server(connectedSocket, addr)
+    initializationThread.start()
