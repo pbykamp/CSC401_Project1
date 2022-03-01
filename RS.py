@@ -47,8 +47,6 @@ class Peer(object):
         for p in activepeerlist:
             if p.portnum != portnum and p.flag == 1:
                 message += "Hostname: " + p.hostname + " PortNumber: " + p.portnum + "\n"
-            # else:
-            #     continue
         return message
 
     @staticmethod
@@ -84,16 +82,16 @@ class Client(threading.Thread):
                 self.connectedsocket.send(message)
                 print("number of peers %d\n" % len(activepeerlist))
 
-            elif (inputLine[0].split()[0] == "LEAVE"):
+            elif inputLine[0].split()[0] == "LEAVE":
                 message = Peer.leave(self.phostname, self.pportnum)
                 self.connectedsocket.send(message)
                 print("number of peers %d\n" % len(activepeerlist))
 
-            elif (inputLine[0].split()[0] == "PQUERY"):
+            elif inputLine[0].split()[0] == "PQUERY":
                 message = Peer.pquery(self.phostname, self.pportnum)
                 self.connectedsocket.send(message)
 
-            elif (inputLine[0].split()[0] == "KEEPALIVE"):
+            elif inputLine[0].split()[0] == "KEEPALIVE":
                 message = Peer.keepalive(self.phostname, self.pportnum)
                 self.connectedsocket.send(message)
 

@@ -53,7 +53,6 @@ class Client(threading.Thread):
         elif choice == 2:
             rfcpeer.findPeers()
         elif choice == 3:
-            #userhostname = input("hostname of the peer you want to query")
             userportnum = input("port number of the peer you want to query: ")
             rfcpeer.rfcquery(userportnum)
         # elif (choice == '4'):
@@ -65,12 +64,12 @@ class Client(threading.Thread):
         elif choice == 7:
             rfcpeer.leave()
         else:
-            print("Wrong Input. Choose 1-6 \n")
+            print("Invalid Option \n")
         self.clientSocket.close()
 
     def run(self):
         while self.running:
-            choice = input("Enter choice(1-5) \n 1: Register with RS \n 2: Get Active Peer list from RS \n 3: Get RFC index of Peers \n 4: Get RFC from Peer \n 5: Keep alive \n 6: add RFC's \n 7: Leave P2P network \n")
+            choice = input("Choose 1-7 \n 1: Register \n 2: PQuery \n 3: RFCQuery \n 4: GetRFC \n 5: KeepAlive \n 6: Add RFC's \n 7: Leave \n")
             rfcpeer.option(choice)
 
     def leave(self):
@@ -89,8 +88,6 @@ class Client(threading.Thread):
             message = "REGISTER P2P-DI/1.0 \nHostname: %s \nPort: %s \nCookie: %s" % (peerName, peerPort, cookie)
             self.clientSocket.send(message.encode())
             response = self.clientSocket.recv(1024).decode()
-            # activethread = keepalive()
-            # activethread.start()
 
         else:
             message = "REGISTER P2P-DI/1.0 \nHostname: %s \nPort: %s" % (peerName, peerPort)
@@ -100,7 +97,6 @@ class Client(threading.Thread):
             line = response.splitlines()
             cookie = line[1].split()[1]
         self.clientSocket.close()
-
 
     def findPeers(self):
         self.clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -161,7 +157,7 @@ class Server(threading.Thread):
             serverInput = self.connectedsocket.recv(1024)
             if not serverInput:
                 break
-
+            print("Started interacting with the peer %s" % peerPort)
             inputlines = serverInput.splitlines()
             if(inputlines[0].split()[0] == "GET" and inputlines[0].split()[1] == "RFC-Index"):
                 print("IN SERVER")
@@ -186,7 +182,7 @@ ptpserverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ptpserverSocket.bind(('', peerPort))
 ptpserverSocket.listen(1)
 
-print("Peer Server is listening on %s with port number %d" % (peerName, peerPort))
+print("Peer %s listening with port number %d" % (peerName, peerPort))
 
 rfcpeer = Client(peerSocket)
 rfcpeer.start()

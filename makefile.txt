@@ -1,3 +1,7 @@
+Pavan Bykampadi (pbykamp)
+Pujitha Polimetla (ppolime)
+Victoria Salerno (vmsalern)
+
 How to compile and run the program
 
 1. Download RS.py and Peer.py.
