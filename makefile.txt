@@ -11,3 +11,5 @@ How to compile and run the program
 5. A menu will be displayed; enter the number corresponding with the choice you want to make.
 6. For each new peer you want to add, repeat step 4.
 7. To terminate the program, close the terminals.
+
+NOTE: Before quering, make sure, option 6 is selcted to add some initial RFCs.
