@@ -1,0 +1,9 @@
+How to compile and run the program
+
+1. Download RS.py and Peer.py.
+2. Use a terminal to navigate to the directory RS.py and Peer.py were downloaded to.
+3. Enter "python RS.py".
+4. In a new terminal and the same directory, enter "python Peer.py".
+5. A menu will be displayed; enter the number corresponding with the choice you want to make.
+6. For each new peer you want to add, repeat step 4.
+7. To terminate the program, close the terminals.
