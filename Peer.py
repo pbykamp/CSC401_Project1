@@ -57,13 +57,6 @@ class Client(threading.Thread):
             userportnum = input("port number of the peer you want to query: ")
             rfcpeer.rfcquery(userportnum)
         # elif (choice == '4'):
-        #     rfc_no = str(raw_input("Enter RFC no to be fetched: "))
-        #     start = datetime.datetime.now()
-        #     rfcclientthread.getRfc(rfc_no)
-        #     end = datetime.datetime.now()
-        #     delta = end - start
-        #     print
-        #     "Time taken to download all files %d msecs" % (delta.seconds * 1000 + delta.microseconds / 1000)
         elif choice == 5:
             rfcpeer.keepalive()
         elif choice == 6:
